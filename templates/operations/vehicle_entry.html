@@ -1,0 +1,71 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>Vehicle Entry</h1>
+
+    <p>Register a new vehicle entry.</p>
+
+</div>
+
+<div class="card">
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <div class="form-group">
+
+            <label>
+                Vehicle Number
+            </label>
+
+            <input
+                type="text"
+                name="vehicle_number"
+                placeholder="LEA-1234"
+                required
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+                Vehicle Type
+            </label>
+
+            <select name="vehicle_type" required>
+
+                <option value="">
+                    Select Vehicle
+                </option>
+
+                {% for type in vehicle_types %}
+
+                    <option value="{{ type.id }}">
+
+                        {{ type.name }}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <button
+            type="submit"
+            class="btn-primary"
+        >
+            Register Vehicle
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

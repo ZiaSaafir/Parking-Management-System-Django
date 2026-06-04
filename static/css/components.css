@@ -1,0 +1,45 @@
+.logo {
+
+    margin-bottom: 40px;
+}
+
+.menu {
+
+    list-style: none;
+}
+
+.menu li {
+
+    margin-bottom: 15px;
+}
+
+.menu a {
+
+    color: white;
+
+    display: block;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    transition: .3s;
+}
+
+.menu a:hover {
+
+    background: #1f2937;
+}
+
+.alert {
+
+    background: #d1fae5;
+
+    color: #065f46;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    margin-bottom: 20px;
+}

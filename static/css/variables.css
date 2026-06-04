@@ -1,0 +1,37 @@
+:root {
+
+    /* Primary */
+
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+
+    /* Status */
+
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+
+    /* Layout */
+
+    --sidebar-bg: #111827;
+    --navbar-bg: #ffffff;
+    --page-bg: #f3f4f6;
+    --card-bg: #ffffff;
+
+    /* Text */
+
+    --text-dark: #111827;
+    --text-light: #6b7280;
+
+    /* Radius */
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    /* Shadow */
+
+    --shadow:
+
+        0 4px 10px rgba(0,0,0,.05);
+}
