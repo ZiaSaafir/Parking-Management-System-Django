@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Ticket Details
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>
+        Parking Ticket
+    </h1>
+
+    <hr>
+
+    <p>
+        <strong>Ticket ID:</strong>
+        #{{ ticket.id }}
+    </p>
+
+    <p>
+        <strong>Vehicle Number:</strong>
+        {{ ticket.vehicle.vehicle_number }}
+    </p>
+
+    <p>
+        <strong>Vehicle Type:</strong>
+        {{ ticket.vehicle.vehicle_type.name }}
+    </p>
+
+    <p>
+        <strong>Assigned Slot:</strong>
+        {{ ticket.slot.slot_number }}
+    </p>
+
+    <p>
+        <strong>Entry Time:</strong>
+        {{ ticket.entry_time }}
+    </p>
+
+    <p>
+        <strong>Status:</strong>
+        {{ ticket.status }}
+    </p>
+
+    <br>
+
+    <a href="{% url 'vehicle_entry' %}">
+        Register Another Vehicle
+    </a>
+
+</div>
+
+{% endblock %}

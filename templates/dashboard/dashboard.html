@@ -1,55 +1,45 @@
-{% extends 'layouts/base.html' %}
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
 
 {% block content %}
 
-<div class="dashboard-header">
+<h1>Parking Dashboard</h1>
 
-    <h2>
-        Dashboard Overview
-    </h2>
+<div class="dashboard-grid">
 
-</div>
-
-<div class="stats-grid">
-
-    <div class="stat-card">
-
+    <div class="card">
         <h3>Total Slots</h3>
-
-        <p>{{ total_slots }}</p>
-
+        <h2>{{ total_slots }}</h2>
     </div>
 
-    <div class="stat-card">
+    <div class="card">
+        <h3>Free Slots</h3>
+        <h2>{{ free_slots }}</h2>
+    </div>
 
+    <div class="card">
         <h3>Occupied Slots</h3>
-
-        <p>{{ occupied_slots }}</p>
-
+        <h2>{{ occupied_slots }}</h2>
     </div>
 
-    <div class="stat-card">
-
-        <h3>Available Slots</h3>
-<p>{{ available_slots }}</p>
-
+    <div class="card">
+        <h3>Active Tickets</h3>
+        <h2>{{ active_tickets }}</h2>
     </div>
 
-    <div class="stat-card">
-
-        <h3>Today's Revenue</h3>
-
-        <p>Rs. {{ total_revenue }}</p>
-
+    <div class="card">
+        <h3>Completed Tickets</h3>
+        <h2>{{ completed_tickets }}</h2>
     </div>
 
-    <div class="stat-card">
+    <div class="card">
+        <h3>Total Revenue</h3>
+        <h2>Rs. {{ total_revenue }}</h2>
+    </div>
 
-    <h3>Active Tickets</h3>
-
-    <p>{{ active_tickets }}</p>
-
-</div>
 </div>
 
 {% endblock %}

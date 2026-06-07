@@ -10,19 +10,43 @@ class VehicleType(models.Model):
 
 
 class Vehicle(models.Model):
-    vehicle_number = models.CharField(max_length=20, unique=True)
+
+    vehicle_number = models.CharField(
+        max_length=20,
+        unique=True
+    )
 
     vehicle_type = models.ForeignKey(
         VehicleType,
         on_delete=models.CASCADE
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    owner_name = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    owner_phone = models.CharField(
+        max_length=20,
+        blank=True
+    )
+
+    visit_count = models.IntegerField(
+        default=0
+    )
+
+    last_visit = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
-        return self.vehicle_number
-    
 
+        return self.vehicle_number
 
 class ParkingSlot(models.Model):
 
@@ -32,7 +56,7 @@ class ParkingSlot(models.Model):
         ('MAINTENANCE', 'Maintenance'),
     ]
 
-    slot_number = models.CharField(max_length=20, unique=True)
+    slot_number = models.CharField(max_length=20, unique=True,db_index=True)
 
     status = models.CharField(
         max_length=20,

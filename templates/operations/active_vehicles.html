@@ -1,0 +1,77 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Active Vehicles
+{% endblock %}
+
+{% block content %}
+
+<h1>Active Vehicles</h1>
+
+<table>
+
+    <thead>
+
+        <tr>
+
+            <th>Ticket</th>
+
+            <th>Vehicle</th>
+
+            <th>Type</th>
+
+            <th>Slot</th>
+
+            <th>Entry Time</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for ticket in tickets %}
+
+        <tr>
+
+            <td>
+                {{ ticket.id }}
+            </td>
+
+            <td>
+                {{ ticket.vehicle.vehicle_number }}
+            </td>
+
+            <td>
+                {{ ticket.vehicle.vehicle_type.name }}
+            </td>
+
+            <td>
+                {{ ticket.slot.slot_number }}
+            </td>
+
+            <td>
+                {{ ticket.entry_time }}
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+
+            <td colspan="5">
+
+                No active vehicles.
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

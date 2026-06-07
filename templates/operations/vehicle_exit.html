@@ -1,0 +1,110 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Vehicle Exit
+{% endblock %}
+
+{% block content %}
+
+<h1>Vehicle Exit</h1>
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    <label>
+        Vehicle Number
+    </label>
+
+    <input
+        type="text"
+        name="vehicle_number"
+        required
+    >
+
+    <button type="submit">
+        Search
+    </button>
+
+</form>
+
+<hr>
+
+{% if ticket %}
+
+<h2>Ticket Details</h2>
+
+<p>
+    <strong>Ticket:</strong>
+    {{ ticket.id }}
+</p>
+
+<p>
+    <strong>Vehicle:</strong>
+    {{ ticket.vehicle.vehicle_number }}
+</p>
+
+<p>
+    <strong>Type:</strong>
+    {{ ticket.vehicle.vehicle_type.name }}
+</p>
+
+<p>
+    <strong>Slot:</strong>
+    {{ ticket.slot.slot_number }}
+</p>
+
+<p>
+    <strong>Entry Time:</strong>
+    {{ ticket.entry_time }}
+</p>
+
+<p>
+    <strong>Amount:</strong>
+    Rs. {{ amount }}
+</p>
+
+{% if ticket %}
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="vehicle_number"
+        value="{{ ticket.vehicle.vehicle_number }}"
+    >
+
+    <input
+        type="hidden"
+        name="action"
+        value="checkout"
+    >
+
+    <label>
+        Payment Method
+    </label>
+
+    <select name="payment_method">
+
+        <option value="CASH">
+            Cash
+        </option>
+
+        <option value="CARD">
+            Card
+        </option>
+
+    </select>
+
+    <button type="submit">
+        Complete Exit
+    </button>
+
+</form>
+
+{% endif %}
+{% endif %}
+
+{% endblock %}
