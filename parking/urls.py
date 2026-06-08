@@ -3,10 +3,13 @@ from django.urls import path
 from .views import (
     active_vehicles,
     dashboard,
+    receipt,
+    vehicle_detail_api,
     vehicle_entry,
     ticket_detail,
     vehicle_exit,
-    vehicle_history
+    vehicle_history,
+    vehicle_search
 )
 urlpatterns = [
 
@@ -41,5 +44,20 @@ path(
     "vehicle-history/",
     vehicle_history,
     name="vehicle_history"
+),
+ path(
+        "search-vehicle/",
+        vehicle_search,
+        name="vehicle_search"
+    ),
+    path(
+    "vehicle/<int:vehicle_id>/",
+    vehicle_detail_api,
+    name="vehicle_detail_api"
+),
+path(
+    "receipt/<int:ticket_id>/",
+    receipt,
+    name="receipt"
 ),
 ]

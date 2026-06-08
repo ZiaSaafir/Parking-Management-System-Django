@@ -1,0 +1,45 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Daily Report
+{% endblock %}
+
+{% block content %}
+
+<h2>Daily Parking Report</h2>
+
+<table class="table">
+
+    <tr>
+        <td>Vehicles Entered Today</td>
+        <td>{{ entered_today }}</td>
+    </tr>
+
+    <tr>
+        <td>Vehicles Exited Today</td>
+        <td>{{ exited_today }}</td>
+    </tr>
+
+    <tr>
+        <td>Revenue Today</td>
+        <td>Rs. {{ revenue_today }}</td>
+    </tr>
+
+    <tr>
+        <td>Active Tickets</td>
+        <td>{{ active_tickets }}</td>
+    </tr>
+
+    <tr>
+        <td>Free Slots</td>
+        <td>{{ free_slots }}</td>
+    </tr>
+
+    <tr>
+        <td>Occupied Slots</td>
+        <td>{{ occupied_slots }}</td>
+    </tr>
+
+</table>
+
+{% endblock %}

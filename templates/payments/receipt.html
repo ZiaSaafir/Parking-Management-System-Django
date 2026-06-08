@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<h2>Parking Receipt</h2>
+
+<hr>
+
+<p>
+    <strong>Receipt ID:</strong>
+    {{ payment.id }}
+</p>
+
+<p>
+    <strong>Vehicle:</strong>
+    {{ ticket.vehicle.vehicle_number }}
+</p>
+
+<p>
+    <strong>Vehicle Type:</strong>
+    {{ ticket.vehicle.vehicle_type.name }}
+</p>
+
+<p>
+    <strong>Slot:</strong>
+    {{ ticket.slot.slot_number }}
+</p>
+
+<p>
+    <strong>Entry Time:</strong>
+    {{ ticket.entry_time }}
+</p>
+
+<p>
+    <strong>Exit Time:</strong>
+    {{ ticket.exit_time }}
+</p>
+
+<p>
+    <strong>Payment Method:</strong>
+    {{ payment.payment_method }}
+</p>
+
+<p>
+    <strong>Amount:</strong>
+    Rs. {{ payment.amount }}
+</p>
+
+<button onclick="window.print()">
+    Print Receipt
+</button>
+
+{% endblock %}

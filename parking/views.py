@@ -4,12 +4,22 @@ from django.shortcuts import (
     get_object_or_404
 )
 
-from .models import Vehicle,ParkingTicket
 from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Sum
+
+from .models import (
+    Vehicle,
+    VehicleType,
+    ParkingSlot,
+    ParkingTicket,
+    Payment
+)
 
 from services.parking_service import (
     ParkingService
 )
+
 from services.slot_service import (
     SlotService
 )
@@ -19,48 +29,28 @@ from services.payment_service import (
 )
 
 
-from .models import (
-    VehicleType,
-    ParkingTicket
-)
-
-from django.db.models import Sum
-
-from .models import (
-    ParkingSlot,
-    ParkingTicket,
-    Payment
-)
-
 def dashboard(request):
+    """
+    Dashboard statistics
+    """
 
-    total_slots = (
-        ParkingSlot.objects.count()
-    )
+    total_slots = ParkingSlot.objects.count()
 
-    free_slots = (
-        ParkingSlot.objects.filter(
-            status="FREE"
-        ).count()
-    )
+    free_slots = ParkingSlot.objects.filter(
+        status="FREE"
+    ).count()
 
-    occupied_slots = (
-        ParkingSlot.objects.filter(
-            status="OCCUPIED"
-        ).count()
-    )
+    occupied_slots = ParkingSlot.objects.filter(
+        status="OCCUPIED"
+    ).count()
 
-    active_tickets = (
-        ParkingTicket.objects.filter(
-            status="ACTIVE"
-        ).count()
-    )
+    active_tickets = ParkingTicket.objects.filter(
+        status="ACTIVE"
+    ).count()
 
-    completed_tickets = (
-        ParkingTicket.objects.filter(
-            status="COMPLETED"
-        ).count()
-    )
+    completed_tickets = ParkingTicket.objects.filter(
+        status="COMPLETED"
+    ).count()
 
     total_revenue = (
         Payment.objects.aggregate(
@@ -86,10 +76,11 @@ def dashboard(request):
 
 
 def vehicle_entry(request):
+    """
+    Register vehicle and create parking ticket
+    """
 
-    vehicle_types = (
-        VehicleType.objects.all()
-    )
+    vehicle_types = VehicleType.objects.all()
 
     if request.method == "POST":
 
@@ -102,11 +93,9 @@ def vehicle_entry(request):
             .upper()
         )
 
-        vehicle_type_id = (
-            request.POST.get(
-                "vehicle_type",
-                ""
-            )
+        vehicle_type_id = request.POST.get(
+            "vehicle_type",
+            ""
         )
 
         if not vehicle_number:
@@ -176,12 +165,13 @@ def ticket_detail(
     request,
     ticket_id
 ):
+    """
+    Show ticket details
+    """
 
-    ticket = (
-        get_object_or_404(
-            ParkingTicket,
-            id=ticket_id
-        )
+    ticket = get_object_or_404(
+        ParkingTicket,
+        id=ticket_id
     )
 
     context = {
@@ -194,7 +184,11 @@ def ticket_detail(
         context
     )
 
+
 def vehicle_exit(request):
+    """
+    Search active ticket and checkout vehicle
+    """
 
     ticket = None
     amount = None
@@ -205,9 +199,13 @@ def vehicle_exit(request):
             "action"
         )
 
-        vehicle_number = request.POST.get(
-            "vehicle_number",
-            ""
+        vehicle_number = (
+            request.POST.get(
+                "vehicle_number",
+                ""
+            )
+            .strip()
+            .upper()
         )
 
         ticket = (
@@ -260,7 +258,8 @@ def vehicle_exit(request):
                 )
 
                 return redirect(
-                    "dashboard"
+                    "receipt",
+                    ticket_id=ticket.id
                 )
 
     context = {
@@ -274,7 +273,11 @@ def vehicle_exit(request):
         context
     )
 
+
 def active_vehicles(request):
+    """
+    Show all active vehicles
+    """
 
     tickets = (
         ParkingTicket.objects
@@ -301,7 +304,11 @@ def active_vehicles(request):
         context
     )
 
+
 def vehicle_history(request):
+    """
+    Show all registered vehicles
+    """
 
     vehicles = (
         Vehicle.objects
@@ -309,7 +316,7 @@ def vehicle_history(request):
             "vehicle_type"
         )
         .order_by(
-            "-visit_count"
+            "-total_visits"
         )
     )
 
@@ -320,5 +327,109 @@ def vehicle_history(request):
     return render(
         request,
         "reports/vehicle_history.html",
+        context
+    )
+
+
+def vehicle_search(request):
+    """
+    AJAX vehicle search
+    """
+
+    query = (
+        request.GET.get(
+            "q",
+            ""
+        )
+        .strip()
+        .upper()
+    )
+
+    vehicles = (
+        Vehicle.objects.filter(
+            vehicle_number__icontains=query
+        )[:10]
+    )
+
+    data = []
+
+    for vehicle in vehicles:
+
+        data.append({
+            "id": vehicle.id,
+            "vehicle_number": vehicle.vehicle_number,
+            "owner_name": vehicle.owner_name,
+            "total_visits": vehicle.total_visits,
+            "vehicle_type": vehicle.vehicle_type.name,
+        })
+
+    return JsonResponse(
+        data,
+        safe=False
+    )
+
+
+def vehicle_detail_api(
+    request,
+    vehicle_id
+):
+    """
+    Return vehicle details for auto-fill
+    """
+
+    vehicle = get_object_or_404(
+        Vehicle,
+        id=vehicle_id
+    )
+
+    data = {
+        "id": vehicle.id,
+        "vehicle_number": vehicle.vehicle_number,
+        "owner_name": vehicle.owner_name,
+        "phone_number": vehicle.phone_number,
+        "vehicle_type_id": vehicle.vehicle_type.id,
+        "vehicle_type": vehicle.vehicle_type.name,
+        "total_visits": vehicle.total_visits,
+        "last_visit": (
+            vehicle.last_visit.strftime(
+                "%Y-%m-%d %H:%M"
+            )
+            if vehicle.last_visit
+            else ""
+        )
+    }
+
+    return JsonResponse(
+        data
+    )
+
+
+def receipt(
+    request,
+    ticket_id
+):
+    """
+    Payment receipt page
+    """
+
+    ticket = get_object_or_404(
+        ParkingTicket,
+        id=ticket_id
+    )
+
+    payment = (
+        Payment.objects.filter(
+            ticket=ticket
+        ).first()
+    )
+
+    context = {
+        "ticket": ticket,
+        "payment": payment
+    }
+
+    return render(
+        request,
+        "payments/receipt.html",
         context
     )
