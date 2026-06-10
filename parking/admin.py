@@ -4,7 +4,8 @@ from .models import (
     Vehicle,
     ParkingSlot,
     ParkingTicket,
-    Payment
+    Payment,
+    UserProfile
 )
 
 admin.site.register(VehicleType)
@@ -12,3 +13,4 @@ admin.site.register(Vehicle)
 admin.site.register(ParkingSlot)
 admin.site.register(ParkingTicket)
 admin.site.register(Payment)
+admin.site.register(UserProfile)

@@ -1,45 +1,282 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}
-Daily Report
+Parking Reports
 {% endblock %}
 
 {% block content %}
 
-<h2>Daily Parking Report</h2>
+<div class="page-header report-print-header">
+    <div>
+        <h2>Parking Reports</h2>
+        <p>Analyze vehicle activity, revenue, and parking usage.</p>
+    </div>
 
-<table class="table">
+    <div class="header-actions no-print">
+        <button class="btn" onclick="window.print()">
+            Print Report
+        </button>
 
-    <tr>
-        <td>Vehicles Entered Today</td>
-        <td>{{ entered_today }}</td>
-    </tr>
+        <a
+            class="btn"
+            href="?report_type={{ report_type }}&start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}&export=csv"
+        >
+            Export Excel
+        </a>
+    </div>
+</div>
 
-    <tr>
-        <td>Vehicles Exited Today</td>
-        <td>{{ exited_today }}</td>
-    </tr>
+<div class="card no-print">
 
-    <tr>
-        <td>Revenue Today</td>
-        <td>Rs. {{ revenue_today }}</td>
-    </tr>
+    <form method="GET">
 
-    <tr>
-        <td>Active Tickets</td>
-        <td>{{ active_tickets }}</td>
-    </tr>
+        <div class="report-filter-grid">
 
-    <tr>
-        <td>Free Slots</td>
-        <td>{{ free_slots }}</td>
-    </tr>
+            <div class="form-group">
+                <label>Report Type</label>
 
-    <tr>
-        <td>Occupied Slots</td>
-        <td>{{ occupied_slots }}</td>
-    </tr>
+                <select name="report_type">
+                    <option value="today" {% if report_type == "today" %}selected{% endif %}>
+                        Today
+                    </option>
 
-</table>
+                    <option value="month" {% if report_type == "month" %}selected{% endif %}>
+                        This Month
+                    </option>
+
+                    <option value="year" {% if report_type == "year" %}selected{% endif %}>
+                        This Year
+                    </option>
+
+                    <option value="custom" {% if report_type == "custom" %}selected{% endif %}>
+                        Custom Date
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Start Date</label>
+
+                <input
+                    type="date"
+                    name="start_date"
+                    value="{{ start_date|date:'Y-m-d' }}"
+                >
+            </div>
+
+            <div class="form-group">
+                <label>End Date</label>
+
+                <input
+                    type="date"
+                    name="end_date"
+                    value="{{ end_date|date:'Y-m-d' }}"
+                >
+            </div>
+
+        </div>
+
+        <button class="btn" type="submit">
+            Generate Report
+        </button>
+
+    </form>
+
+</div>
+
+<br>
+
+<div class="dashboard-grid">
+
+    <div class="stat-card stat-primary">
+        <span>Vehicles Entered</span>
+        <h2>{{ entered_count }}</h2>
+        <p>Vehicles registered in this period</p>
+    </div>
+
+    <div class="stat-card stat-info">
+        <span>Vehicles Exited</span>
+        <h2>{{ exited_count }}</h2>
+        <p>Completed parking sessions</p>
+    </div>
+
+    <div class="stat-card stat-money">
+        <span>Total Revenue</span>
+        <h2>Rs. {{ revenue }}</h2>
+        <p>Collected payments</p>
+    </div>
+
+    <div class="stat-card stat-warning">
+        <span>Active Tickets</span>
+        <h2>{{ active_tickets }}</h2>
+        <p>Currently parked vehicles</p>
+    </div>
+
+    <div class="stat-card stat-success">
+        <span>Free Slots</span>
+        <h2>{{ free_slots }}</h2>
+        <p>Available spaces</p>
+    </div>
+
+    <div class="stat-card stat-dark">
+        <span>Occupied Slots</span>
+        <h2>{{ occupied_slots }}</h2>
+        <p>Used parking spaces</p>
+    </div>
+
+</div>
+
+<br>
+
+<div class="dashboard-two-column no-print">
+
+    <div class="chart-card">
+        <div class="section-title">
+            <h3>Vehicle Movement</h3>
+            <p>Entered vs exited vehicles</p>
+        </div>
+
+        <canvas id="movementChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <div class="section-title">
+            <h3>Slot Usage</h3>
+            <p>Free and occupied slot distribution</p>
+        </div>
+
+        <canvas id="reportSlotChart"></canvas>
+    </div>
+
+</div>
+
+<br>
+
+<div class="card">
+    <h3>Detailed Ticket Report</h3>
+    <p>
+        Showing records from {{ start_date }} to {{ end_date }}.
+    </p>
+</div>
+
+<br>
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Ticket</th>
+                <th>Vehicle</th>
+                <th>Type</th>
+                <th>Slot</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>Status</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for ticket in tickets %}
+
+                <tr>
+                    <td>#{{ ticket.id }}</td>
+                    <td>{{ ticket.vehicle.vehicle_number }}</td>
+                    <td>{{ ticket.vehicle.vehicle_type.name }}</td>
+                    <td>{{ ticket.slot.slot_number }}</td>
+                    <td>{{ ticket.entry_time }}</td>
+                    <td>
+                        {% if ticket.exit_time %}
+                            {{ ticket.exit_time }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ ticket.status }}</td>
+                    <td>Rs. {{ ticket.total_amount|default:"0" }}</td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="8">
+                        No report data found.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const enteredCount = Number("{{ entered_count }}");
+    const exitedCount = Number("{{ exited_count }}");
+    const freeSlots = Number("{{ free_slots }}");
+    const occupiedSlots = Number("{{ occupied_slots }}");
+
+    new Chart(
+        document.getElementById("movementChart"),
+        {
+            type: "bar",
+            data: {
+                labels: ["Entered", "Exited"],
+                datasets: [{
+                    label: "Vehicles",
+                    data: [enteredCount, exitedCount],
+                    backgroundColor: ["#2563eb", "#0ea5e9"],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        }
+    );
+
+    new Chart(
+        document.getElementById("reportSlotChart"),
+        {
+            type: "doughnut",
+            data: {
+                labels: ["Free Slots", "Occupied Slots"],
+                datasets: [{
+                    data: [freeSlots, occupiedSlots],
+                    backgroundColor: ["#16a34a", "#f59e0b"],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        }
+    );
+</script>
 
 {% endblock %}

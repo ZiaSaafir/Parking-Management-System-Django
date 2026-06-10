@@ -1,71 +1,256 @@
-{% extends 'layouts/base.html' %}
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Vehicle Entry
+{% endblock %}
 
 {% block content %}
 
 <div class="page-header">
-
-    <h1>Vehicle Entry</h1>
-
-    <p>Register a new vehicle entry.</p>
-
+    <div>
+        <h2>Vehicle Entry</h2>
+        <p>
+            Register vehicle, save customer information, select parking slot,
+            and generate ticket.
+        </p>
+    </div>
 </div>
 
-<div class="card">
+<div class="form-card">
+
+    <div id="slot-message">
+
+        {% if suggested_slot %}
+
+            <div class="message message-success">
+                Suggested Slot:
+                <strong>{{ suggested_slot.slot_number }}</strong>
+                <span>
+                    ({{ suggested_slot.get_slot_type_display }})
+                </span>
+            </div>
+
+        {% else %}
+
+            <div class="message message-error">
+                No free parking slot available.
+            </div>
+
+        {% endif %}
+
+    </div>
 
     <form method="POST">
 
         {% csrf_token %}
 
         <div class="form-group">
-
             <label>
-                Vehicle Number
+                Vehicle Number *
             </label>
 
             <input
                 type="text"
                 name="vehicle_number"
-                placeholder="LEA-1234"
+                placeholder="Example: LEA1234"
                 required
             >
-
         </div>
 
         <div class="form-group">
-
             <label>
-                Vehicle Type
+                Owner Name
             </label>
 
-            <select name="vehicle_type" required>
+            <input
+                type="text"
+                name="owner_name"
+                placeholder="Example: Zia Ullah"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>
+                Owner Phone
+            </label>
+
+            <input
+                type="text"
+                name="owner_phone"
+                placeholder="Example: 03001234567"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>
+                Vehicle Type *
+            </label>
+
+            <select
+                name="vehicle_type"
+                id="vehicle_type"
+                required
+            >
 
                 <option value="">
-                    Select Vehicle
+                    Select Vehicle Type
                 </option>
 
-                {% for type in vehicle_types %}
+                {% for vehicle_type in vehicle_types %}
 
-                    <option value="{{ type.id }}">
-
-                        {{ type.name }}
-
+                    <option
+                        value="{{ vehicle_type.id }}"
+                        data-name="{{ vehicle_type.name|upper }}"
+                    >
+                        {{ vehicle_type.name }} - Rs. {{ vehicle_type.fixed_rate }}
                     </option>
 
                 {% endfor %}
 
             </select>
+        </div>
 
+        <div class="form-group">
+            <label>
+                Parking Slot *
+            </label>
+
+            <select
+                name="slot"
+                id="slot"
+                required
+            >
+
+                {% if suggested_slot %}
+
+                    <option value="{{ suggested_slot.id }}">
+                        Auto Suggested:
+                        {{ suggested_slot.slot_number }}
+                        ({{ suggested_slot.get_slot_type_display }})
+                    </option>
+
+                {% endif %}
+
+                {% for slot in free_slots %}
+
+                    {% if not suggested_slot or slot.id != suggested_slot.id %}
+
+                        <option value="{{ slot.id }}">
+                            {{ slot.slot_number }}
+                            ({{ slot.get_slot_type_display }})
+                        </option>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </select>
+
+            <small class="form-help">
+                System suggests compatible slots automatically. Operator can
+                manually change slot if needed.
+            </small>
         </div>
 
         <button
+            class="btn"
+            id="create-ticket-btn"
             type="submit"
-            class="btn-primary"
+            {% if not suggested_slot %}disabled{% endif %}
         >
-            Register Vehicle
+            Create Ticket
         </button>
 
     </form>
 
 </div>
+
+<script>
+    const vehicleTypeSelect = document.getElementById("vehicle_type");
+    const slotSelect = document.getElementById("slot");
+    const slotMessage = document.getElementById("slot-message");
+    const createTicketBtn = document.getElementById("create-ticket-btn");
+
+    vehicleTypeSelect.addEventListener("change", function () {
+
+        const selectedOption =
+            vehicleTypeSelect.options[
+                vehicleTypeSelect.selectedIndex
+            ];
+
+        const vehicleTypeName =
+            selectedOption.getAttribute("data-name");
+
+        if (!vehicleTypeName) {
+            return;
+        }
+
+        fetch(
+            `/api/available-slots/?vehicle_type=${vehicleTypeName}`
+        )
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (slots) {
+
+                slotSelect.innerHTML = "";
+
+                if (slots.length === 0) {
+
+                    slotMessage.innerHTML =
+                        `
+                        <div class="message message-error">
+                            No compatible free slot available for
+                            <strong>${vehicleTypeName}</strong>.
+                        </div>
+                        `;
+
+                    createTicketBtn.disabled = true;
+
+                    return;
+                }
+
+                slots.forEach(function (slot, index) {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = slot.id;
+
+                    if (index === 0) {
+                        option.text =
+                            `Auto Suggested: ${slot.slot_number} (${slot.slot_type})`;
+                    } else {
+                        option.text =
+                            `${slot.slot_number} (${slot.slot_type})`;
+                    }
+
+                    slotSelect.appendChild(option);
+                });
+
+                slotMessage.innerHTML =
+                    `
+                    <div class="message message-success">
+                        Suggested Slot:
+                        <strong>${slots[0].slot_number}</strong>
+                        <span>(${slots[0].slot_type})</span>
+                    </div>
+                    `;
+
+                createTicketBtn.disabled = false;
+            })
+            .catch(function () {
+
+                slotMessage.innerHTML =
+                    `
+                    <div class="message message-error">
+                        Unable to load available slots. Please try again.
+                    </div>
+                    `;
+
+                createTicketBtn.disabled = true;
+            });
+    });
+</script>
 
 {% endblock %}

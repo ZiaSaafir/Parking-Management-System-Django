@@ -1,0 +1,75 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Parking Slots
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h2>Parking Slots</h2>
+        <p>Manage parking slot types, availability, and maintenance status.</p>
+    </div>
+
+    <div class="header-actions">
+        <a href="{% url 'parking_slot_create' %}" class="btn">
+            Add New Slot
+        </a>
+    </div>
+</div>
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Slot Number</th>
+                <th>Slot Type</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for slot in slots %}
+
+                <tr>
+                    <td>{{ slot.slot_number }}</td>
+                    <td>{{ slot.get_slot_type_display }}</td>
+                    <td>{{ slot.status }}</td>
+                    <td>{{ slot.created_at }}</td>
+
+                    <td>
+                        <a href="{% url 'parking_slot_update' slot.id %}">
+                            Edit
+                        </a>
+
+                        |
+
+                        <a href="{% url 'parking_slot_delete' slot.id %}">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="5">
+                        No parking slots found.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

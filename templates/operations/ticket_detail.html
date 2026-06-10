@@ -1,18 +1,21 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}
-Ticket Details
+Ticket Detail
 {% endblock %}
 
 {% block content %}
 
 <div class="card">
 
-    <h1>
-        Parking Ticket
-    </h1>
+    <h2>Parking Ticket</h2>
+    <p>Ticket generated successfully.</p>
 
-    <hr>
+</div>
+
+<br>
+
+<div class="card">
 
     <p>
         <strong>Ticket ID:</strong>
@@ -30,7 +33,7 @@ Ticket Details
     </p>
 
     <p>
-        <strong>Assigned Slot:</strong>
+        <strong>Parking Slot:</strong>
         {{ ticket.slot.slot_number }}
     </p>
 
@@ -46,7 +49,7 @@ Ticket Details
 
     <br>
 
-    <a href="{% url 'vehicle_entry' %}">
+    <a class="btn" href="{% url 'vehicle_entry' %}">
         Register Another Vehicle
     </a>
 

@@ -1,53 +1,81 @@
 {% extends "layouts/base.html" %}
 
+{% block title %}
+Receipt
+{% endblock %}
+
 {% block content %}
 
-<h2>Parking Receipt</h2>
+<div class="card receipt-card">
 
-<hr>
+    <h2>Peshawar Parking Receipt</h2>
+    <p>Official parking payment receipt.</p>
 
-<p>
-    <strong>Receipt ID:</strong>
-    {{ payment.id }}
-</p>
+    <hr>
 
-<p>
-    <strong>Vehicle:</strong>
-    {{ ticket.vehicle.vehicle_number }}
-</p>
+    <p>
+        <strong>Receipt ID:</strong>
+        {% if payment %}
+            #{{ payment.id }}
+        {% else %}
+            Not paid
+        {% endif %}
+    </p>
 
-<p>
-    <strong>Vehicle Type:</strong>
-    {{ ticket.vehicle.vehicle_type.name }}
-</p>
+    <p>
+        <strong>Ticket ID:</strong>
+        #{{ ticket.id }}
+    </p>
 
-<p>
-    <strong>Slot:</strong>
-    {{ ticket.slot.slot_number }}
-</p>
+    <p>
+        <strong>Vehicle:</strong>
+        {{ ticket.vehicle.vehicle_number }}
+    </p>
 
-<p>
-    <strong>Entry Time:</strong>
-    {{ ticket.entry_time }}
-</p>
+    <p>
+        <strong>Vehicle Type:</strong>
+        {{ ticket.vehicle.vehicle_type.name }}
+    </p>
 
-<p>
-    <strong>Exit Time:</strong>
-    {{ ticket.exit_time }}
-</p>
+    <p>
+        <strong>Slot:</strong>
+        {{ ticket.slot.slot_number }}
+    </p>
 
-<p>
-    <strong>Payment Method:</strong>
-    {{ payment.payment_method }}
-</p>
+    <p>
+        <strong>Entry Time:</strong>
+        {{ ticket.entry_time }}
+    </p>
 
-<p>
-    <strong>Amount:</strong>
-    Rs. {{ payment.amount }}
-</p>
+    <p>
+        <strong>Exit Time:</strong>
+        {{ ticket.exit_time }}
+    </p>
 
-<button onclick="window.print()">
-    Print Receipt
-</button>
+    <p>
+        <strong>Payment Method:</strong>
+        {% if payment %}
+            {{ payment.payment_method }}
+        {% else %}
+            -
+        {% endif %}
+    </p>
+
+    <p>
+        <strong>Amount:</strong>
+        {% if payment %}
+            Rs. {{ payment.amount }}
+        {% else %}
+            Rs. 0
+        {% endif %}
+    </p>
+
+    <br>
+
+    <button class="btn" onclick="window.print()">
+        Print Receipt
+    </button>
+
+</div>
 
 {% endblock %}

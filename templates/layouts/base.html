@@ -2,73 +2,43 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<link
-    rel="stylesheet"
-    href="{% static 'css/variables.css' %}">
-    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
-    <link
-    rel="stylesheet"
-    href="{% static 'css/dashboard.css' %}"
->
+
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
-        Peshawar Parking System
+        {% block title %}
+        Nexon Parking System
+        {% endblock %}
     </title>
 
-    <link
-        rel="stylesheet"
-        href="{% static 'css/base.css' %}"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{% static 'css/layout.css' %}"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{% static 'css/components.css' %}"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{% static 'css/forms.css' %}"
-    >
-    <link
-    rel="stylesheet"
-    href="{% static 'css/table.css' %}"
->
-
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+    <link rel="stylesheet" href="{% static 'css/table.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 </head>
 
 <body>
 
-    <div class="app-container">
+    <div class="app-layout">
 
-        {% include 'includes/sidebar.html' %}
+        {% include "includes/sidebar.html" %}
 
-        <div class="main-section">
+        <main class="main-content">
 
-            {% include 'includes/navbar.html' %}
+            {% include "includes/navbar.html" %}
+            {% include "includes/messages.html" %}
 
-            <main class="content-area">
-
-                {% include 'includes/messages.html' %}
-
+            <section class="page-content">
                 {% block content %}
                 {% endblock %}
+            </section>
 
-            </main>
-
-        </div>
+        </main>
 
     </div>
 

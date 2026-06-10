@@ -6,105 +6,50 @@ Vehicle Exit
 
 {% block content %}
 
-<h1>Vehicle Exit</h1>
+<div class="form-card">
 
-<form method="POST">
+    <h2>Vehicle Exit</h2>
+    <p>Search active ticket and complete vehicle checkout.</p>
 
-    {% csrf_token %}
+    <br>
 
-    <label>
-        Vehicle Number
-    </label>
+    <form method="POST">
 
-    <input
-        type="text"
-        name="vehicle_number"
-        required
-    >
+        {% csrf_token %}
 
-    <button type="submit">
-        Search
-    </button>
+        <div class="form-group">
+            <label>Vehicle Number</label>
 
-</form>
+            <input
+                type="text"
+                name="vehicle_number"
+                placeholder="Example: LEA1234"
+                required
+            >
+        </div>
 
-<hr>
+        <div class="form-group">
+            <label>Payment Method</label>
 
-{% if ticket %}
+            <select name="payment_method">
 
-<h2>Ticket Details</h2>
+                <option value="CASH">
+                    Cash
+                </option>
 
-<p>
-    <strong>Ticket:</strong>
-    {{ ticket.id }}
-</p>
+                <option value="CARD">
+                    Card
+                </option>
 
-<p>
-    <strong>Vehicle:</strong>
-    {{ ticket.vehicle.vehicle_number }}
-</p>
+            </select>
+        </div>
 
-<p>
-    <strong>Type:</strong>
-    {{ ticket.vehicle.vehicle_type.name }}
-</p>
+        <button class="btn" type="submit">
+            Complete Exit
+        </button>
 
-<p>
-    <strong>Slot:</strong>
-    {{ ticket.slot.slot_number }}
-</p>
+    </form>
 
-<p>
-    <strong>Entry Time:</strong>
-    {{ ticket.entry_time }}
-</p>
-
-<p>
-    <strong>Amount:</strong>
-    Rs. {{ amount }}
-</p>
-
-{% if ticket %}
-
-<form method="POST">
-
-    {% csrf_token %}
-
-    <input
-        type="hidden"
-        name="vehicle_number"
-        value="{{ ticket.vehicle.vehicle_number }}"
-    >
-
-    <input
-        type="hidden"
-        name="action"
-        value="checkout"
-    >
-
-    <label>
-        Payment Method
-    </label>
-
-    <select name="payment_method">
-
-        <option value="CASH">
-            Cash
-        </option>
-
-        <option value="CARD">
-            Card
-        </option>
-
-    </select>
-
-    <button type="submit">
-        Complete Exit
-    </button>
-
-</form>
-
-{% endif %}
-{% endif %}
+</div>
 
 {% endblock %}

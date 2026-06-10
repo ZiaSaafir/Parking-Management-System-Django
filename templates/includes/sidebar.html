@@ -1,55 +1,90 @@
-<div class="sidebar">
+<aside class="sidebar">
 
-    <div class="logo">
+    <div class="sidebar-brand">
+        <div class="brand-icon">
+            P
+        </div>
 
-        <h2>PPS</h2>
-
-        <p>Peshawar Parking</p>
-
+        <div>
+            <h2>NPS</h2>
+            <p>Nexon Parking</p>
+        </div>
     </div>
 
-    <ul class="menu">
+    <ul class="sidebar-menu">
+
+        {% if user.is_authenticated %}
 
         <li>
-
             <a href="{% url 'dashboard' %}">
                 Dashboard
             </a>
-
         </li>
 
-        <li>
+        {% if user.userprofile.role == "ADMIN" or user.userprofile.role == "OPERATOR" %}
 
+        <li>
             <a href="{% url 'vehicle_entry' %}">
-    Vehicle Entry
-</a>
-
-        </li>
-
-        <li>
-
-           <a href="{% url 'vehicle_exit' %}">
-    Vehicle Exit
-</a>
-
-        </li>
-
-      <li>
-
-    <a href="{% url 'active_vehicles' %}">
-        Active Vehicles
-    </a>
-
-</li>
-
-        <li>
-
-            <a href="#">
-                Reports
+                Vehicle Entry
             </a>
-
         </li>
+
+        <li>
+            <a href="{% url 'vehicle_exit' %}">
+                Vehicle Exit
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'active_vehicles' %}">
+                Active Vehicles
+            </a>
+        </li>
+
+        {% endif %}
+
+        {% if user.userprofile.role == "ADMIN" or user.userprofile.role == "MANAGER" %}
+
+        <li>
+            <a href="{% url 'vehicle_history' %}">
+                Vehicle History
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'daily_report' %}">
+                Daily Report
+            </a>
+        </li>
+
+        {% if user.userprofile.role == "ADMIN" %}
+
+        <li>
+            <a href="{% url 'parking_slot_list' %}">
+                Parking Slots
+            </a>
+        </li>
+
+        {% endif %}
+        {% endif %}
+
+        <li class="sidebar-bottom">
+            <a href="{% url 'logout' %}">
+                Logout
+            </a>
+        </li>
+
+        {% else %}
+
+        <li>
+            <a href="{% url 'login' %}">
+                Login
+            </a>
+        </li>
+
+        {% endif %}
+
 
     </ul>
 
-</div>
+</aside>

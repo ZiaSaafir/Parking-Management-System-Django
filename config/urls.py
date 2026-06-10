@@ -17,5 +17,9 @@ urlpatterns = [
         "reports/",
         include("reports.urls")
     ),
+    path(
+    "accounts/",
+    include("accounts.urls")
+),
 
 ]

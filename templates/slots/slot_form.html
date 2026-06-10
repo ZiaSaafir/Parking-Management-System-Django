@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="form-card">
+
+    <h2>{{ title }}</h2>
+
+    <p>
+        Manage parking slot type and operational status.
+    </p>
+
+    <br>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Slot Number</label>
+            {{ form.slot_number }}
+        </div>
+
+        <div class="form-group">
+            <label>Slot Type</label>
+            {{ form.slot_type }}
+        </div>
+
+        <div class="form-group">
+            <label>Status</label>
+            {{ form.status }}
+        </div>
+
+        <button class="btn" type="submit">
+            {{ button_text }}
+        </button>
+
+        <a class="btn" href="{% url 'parking_slot_list' %}">
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

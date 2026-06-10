@@ -6,72 +6,55 @@ Active Vehicles
 
 {% block content %}
 
-<h1>Active Vehicles</h1>
+<div class="card">
 
-<table>
+    <h2>Active Vehicles</h2>
+    <p>Currently parked vehicles.</p>
 
-    <thead>
+</div>
 
-        <tr>
+<br>
 
-            <th>Ticket</th>
+<div class="table-container">
 
-            <th>Vehicle</th>
+    <table>
 
-            <th>Type</th>
+        <thead>
+            <tr>
+                <th>Ticket</th>
+                <th>Vehicle</th>
+                <th>Type</th>
+                <th>Slot</th>
+                <th>Entry Time</th>
+            </tr>
+        </thead>
 
-            <th>Slot</th>
+        <tbody>
 
-            <th>Entry Time</th>
+            {% for ticket in tickets %}
 
-        </tr>
+                <tr>
+                    <td>#{{ ticket.id }}</td>
+                    <td>{{ ticket.vehicle.vehicle_number }}</td>
+                    <td>{{ ticket.vehicle.vehicle_type.name }}</td>
+                    <td>{{ ticket.slot.slot_number }}</td>
+                    <td>{{ ticket.entry_time }}</td>
+                </tr>
 
-    </thead>
+            {% empty %}
 
-    <tbody>
+                <tr>
+                    <td colspan="5">
+                        No active vehicles found.
+                    </td>
+                </tr>
 
-        {% for ticket in tickets %}
+            {% endfor %}
 
-        <tr>
+        </tbody>
 
-            <td>
-                {{ ticket.id }}
-            </td>
+    </table>
 
-            <td>
-                {{ ticket.vehicle.vehicle_number }}
-            </td>
-
-            <td>
-                {{ ticket.vehicle.vehicle_type.name }}
-            </td>
-
-            <td>
-                {{ ticket.slot.slot_number }}
-            </td>
-
-            <td>
-                {{ ticket.entry_time }}
-            </td>
-
-        </tr>
-
-        {% empty %}
-
-        <tr>
-
-            <td colspan="5">
-
-                No active vehicles.
-
-            </td>
-
-        </tr>
-
-        {% endfor %}
-
-    </tbody>
-
-</table>
+</div>
 
 {% endblock %}

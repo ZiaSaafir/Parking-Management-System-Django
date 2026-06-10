@@ -1,0 +1,64 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Vehicle History
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Vehicle History</h2>
+    <p>All registered vehicles and customer visit records.</p>
+</div>
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Vehicle Number</th>
+                <th>Vehicle Type</th>
+                <th>Owner Name</th>
+                <th>Owner Phone</th>
+                <th>Total Visits</th>
+                <th>Last Visit</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for vehicle in vehicles %}
+
+                <tr>
+                    <td>{{ vehicle.vehicle_number }}</td>
+                    <td>{{ vehicle.vehicle_type.name }}</td>
+                    <td>{{ vehicle.owner_name|default:"-" }}</td>
+                    <td>{{ vehicle.owner_phone|default:"-" }}</td>
+                    <td>{{ vehicle.total_visits }}</td>
+                    <td>
+                        {% if vehicle.last_visit %}
+                            {{ vehicle.last_visit }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="6">
+                        No vehicle history found.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

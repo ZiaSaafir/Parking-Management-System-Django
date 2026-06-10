@@ -1,0 +1,104 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        Login | Peshawar Parking System
+    </title>
+
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+
+    <style>
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-main);
+            padding: 24px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 34px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+
+        .login-brand {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-brand h1 {
+            color: var(--primary);
+            font-size: 32px;
+        }
+
+        .login-brand p {
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-page">
+
+        <div class="login-card">
+
+            <div class="login-brand">
+                <h1>PPS</h1>
+                <p>Peshawar Parking System</p>
+            </div>
+
+            {% include "includes/messages.html" %}
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Username</label>
+
+                    <input
+                        type="text"
+                        name="username"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        required
+                    >
+                </div>
+
+                <button class="btn" type="submit" style="width: 100%;">
+                    Login
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

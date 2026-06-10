@@ -4,9 +4,14 @@ from django.shortcuts import (
     get_object_or_404
 )
 
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Sum
+
+from services.permissions import role_required
+from services.parking_service import ParkingService
+from services.slot_service import SlotService
 
 from .models import (
     Vehicle,
@@ -16,56 +21,19 @@ from .models import (
     Payment
 )
 
-from services.parking_service import (
-    ParkingService
-)
 
-from services.slot_service import (
-    SlotService
-)
-
-from services.payment_service import (
-    PaymentService
-)
-
-
+@login_required
 def dashboard(request):
-    """
-    Dashboard statistics
-    """
-
-    total_slots = ParkingSlot.objects.count()
-
-    free_slots = ParkingSlot.objects.filter(
-        status="FREE"
-    ).count()
-
-    occupied_slots = ParkingSlot.objects.filter(
-        status="OCCUPIED"
-    ).count()
-
-    active_tickets = ParkingTicket.objects.filter(
-        status="ACTIVE"
-    ).count()
-
-    completed_tickets = ParkingTicket.objects.filter(
-        status="COMPLETED"
-    ).count()
-
-    total_revenue = (
-        Payment.objects.aggregate(
-            total=Sum("amount")
-        )["total"]
-        or 0
-    )
 
     context = {
-        "total_slots": total_slots,
-        "free_slots": free_slots,
-        "occupied_slots": occupied_slots,
-        "active_tickets": active_tickets,
-        "completed_tickets": completed_tickets,
-        "total_revenue": total_revenue,
+        "total_slots": ParkingSlot.objects.count(),
+        "free_slots": ParkingSlot.objects.filter(status="FREE").count(),
+        "occupied_slots": ParkingSlot.objects.filter(status="OCCUPIED").count(),
+        "active_tickets": ParkingTicket.objects.filter(status="ACTIVE").count(),
+        "completed_tickets": ParkingTicket.objects.filter(status="COMPLETED").count(),
+        "total_revenue": (
+            Payment.objects.aggregate(total=Sum("amount"))["total"] or 0
+        ),
     }
 
     return render(
@@ -75,26 +43,41 @@ def dashboard(request):
     )
 
 
+@login_required
+@role_required("ADMIN", "OPERATOR")
 def vehicle_entry(request):
-    """
-    Register vehicle and create parking ticket
-    """
 
     vehicle_types = VehicleType.objects.all()
+
+    free_slots = SlotService.get_free_slots()
+
+    suggested_slot = SlotService.get_free_slot()
 
     if request.method == "POST":
 
         vehicle_number = (
-            request.POST.get(
-                "vehicle_number",
-                ""
-            )
+            request.POST.get("vehicle_number", "")
             .strip()
             .upper()
         )
 
+        owner_name = (
+            request.POST.get("owner_name", "")
+            .strip()
+        )
+
+        owner_phone = (
+            request.POST.get("owner_phone", "")
+            .strip()
+        )
+
         vehicle_type_id = request.POST.get(
             "vehicle_type",
+            ""
+        )
+
+        slot_id = request.POST.get(
+            "slot",
             ""
         )
 
@@ -125,17 +108,21 @@ def vehicle_entry(request):
 
             try:
 
-                vehicle, created = (
-                    ParkingService.register_vehicle(
-                        vehicle_number,
-                        vehicle_type_id
-                    )
+                vehicle, created = ParkingService.register_vehicle(
+                    vehicle_number,
+                    vehicle_type_id,
+                    owner_name,
+                    owner_phone
                 )
 
-                ticket = (
-                    ParkingService.create_ticket(
-                        vehicle
-                    )
+                ticket = ParkingService.create_ticket(
+                    vehicle,
+                    slot_id
+                )
+
+                messages.success(
+                    request,
+                    "Parking ticket created successfully."
                 )
 
                 return redirect(
@@ -151,7 +138,9 @@ def vehicle_entry(request):
                 )
 
     context = {
-        "vehicle_types": vehicle_types
+        "vehicle_types": vehicle_types,
+        "free_slots": free_slots,
+        "suggested_slot": suggested_slot,
     }
 
     return render(
@@ -161,13 +150,9 @@ def vehicle_entry(request):
     )
 
 
-def ticket_detail(
-    request,
-    ticket_id
-):
-    """
-    Show ticket details
-    """
+@login_required
+@role_required("ADMIN", "OPERATOR")
+def ticket_detail(request, ticket_id):
 
     ticket = get_object_or_404(
         ParkingTicket,
@@ -185,113 +170,66 @@ def ticket_detail(
     )
 
 
+@login_required
+@role_required("ADMIN", "OPERATOR")
 def vehicle_exit(request):
-    """
-    Search active ticket and checkout vehicle
-    """
-
-    ticket = None
-    amount = None
 
     if request.method == "POST":
 
-        action = request.POST.get(
-            "action"
-        )
+        try:
 
-        vehicle_number = (
-            request.POST.get(
-                "vehicle_number",
-                ""
+            vehicle_number = (
+                request.POST.get("vehicle_number", "")
+                .strip()
+                .upper()
             )
-            .strip()
-            .upper()
-        )
 
-        ticket = (
-            ParkingService.get_active_ticket(
-                vehicle_number
+            payment_method = request.POST.get(
+                "payment_method",
+                "CASH"
             )
-        )
 
-        if not ticket:
+            payment = ParkingService.process_exit(
+                vehicle_number,
+                payment_method
+            )
+
+            messages.success(
+                request,
+                "Vehicle exited successfully."
+            )
+
+            return redirect(
+                "receipt",
+                ticket_id=payment.ticket.id
+            )
+
+        except Exception as e:
 
             messages.error(
                 request,
-                "Active ticket not found."
+                str(e)
             )
-
-        else:
-
-            amount = (
-                PaymentService.calculate_amount(
-                    ticket
-                )
-            )
-
-            if action == "checkout":
-
-                payment_method = (
-                    request.POST.get(
-                        "payment_method",
-                        "CASH"
-                    )
-                )
-
-                PaymentService.create_payment(
-                    ticket,
-                    payment_method
-                )
-
-                ParkingService.close_ticket(
-                    ticket,
-                    amount
-                )
-
-                SlotService.release_slot(
-                    ticket.slot
-                )
-
-                messages.success(
-                    request,
-                    "Vehicle exited successfully."
-                )
-
-                return redirect(
-                    "receipt",
-                    ticket_id=ticket.id
-                )
-
-    context = {
-        "ticket": ticket,
-        "amount": amount
-    }
 
     return render(
         request,
-        "operations/vehicle_exit.html",
-        context
+        "operations/vehicle_exit.html"
     )
 
 
+@login_required
+@role_required("ADMIN", "OPERATOR")
 def active_vehicles(request):
-    """
-    Show all active vehicles
-    """
 
     tickets = (
         ParkingTicket.objects
-        .filter(
-            status="ACTIVE"
-        )
+        .filter(status="ACTIVE")
         .select_related(
             "vehicle",
             "vehicle__vehicle_type",
             "slot"
         )
-        .order_by(
-            "-entry_time"
-        )
+        .order_by("-entry_time")
     )
 
     context = {
@@ -305,19 +243,14 @@ def active_vehicles(request):
     )
 
 
+@login_required
+@role_required("ADMIN", "OPERATOR")
 def vehicle_history(request):
-    """
-    Show all registered vehicles
-    """
 
     vehicles = (
         Vehicle.objects
-        .select_related(
-            "vehicle_type"
-        )
-        .order_by(
-            "-total_visits"
-        )
+        .select_related("vehicle_type")
+        .order_by("-total_visits")
     )
 
     context = {
@@ -331,24 +264,19 @@ def vehicle_history(request):
     )
 
 
+@login_required
+@role_required("ADMIN", "OPERATOR")
 def vehicle_search(request):
-    """
-    AJAX vehicle search
-    """
 
     query = (
-        request.GET.get(
-            "q",
-            ""
-        )
+        request.GET.get("q", "")
         .strip()
         .upper()
     )
 
     vehicles = (
-        Vehicle.objects.filter(
-            vehicle_number__icontains=query
-        )[:10]
+        Vehicle.objects
+        .filter(vehicle_number__icontains=query)[:10]
     )
 
     data = []
@@ -359,6 +287,7 @@ def vehicle_search(request):
             "id": vehicle.id,
             "vehicle_number": vehicle.vehicle_number,
             "owner_name": vehicle.owner_name,
+            "owner_phone": vehicle.owner_phone,
             "total_visits": vehicle.total_visits,
             "vehicle_type": vehicle.vehicle_type.name,
         })
@@ -369,13 +298,9 @@ def vehicle_search(request):
     )
 
 
-def vehicle_detail_api(
-    request,
-    vehicle_id
-):
-    """
-    Return vehicle details for auto-fill
-    """
+@login_required
+@role_required("ADMIN", "OPERATOR")
+def vehicle_detail_api(request, vehicle_id):
 
     vehicle = get_object_or_404(
         Vehicle,
@@ -386,31 +311,23 @@ def vehicle_detail_api(
         "id": vehicle.id,
         "vehicle_number": vehicle.vehicle_number,
         "owner_name": vehicle.owner_name,
-        "phone_number": vehicle.phone_number,
+        "owner_phone": vehicle.owner_phone,
         "vehicle_type_id": vehicle.vehicle_type.id,
         "vehicle_type": vehicle.vehicle_type.name,
         "total_visits": vehicle.total_visits,
         "last_visit": (
-            vehicle.last_visit.strftime(
-                "%Y-%m-%d %H:%M"
-            )
+            vehicle.last_visit.strftime("%Y-%m-%d %H:%M")
             if vehicle.last_visit
             else ""
         )
     }
 
-    return JsonResponse(
-        data
-    )
+    return JsonResponse(data)
 
 
-def receipt(
-    request,
-    ticket_id
-):
-    """
-    Payment receipt page
-    """
+@login_required
+@role_required("ADMIN", "OPERATOR")
+def receipt(request, ticket_id):
 
     ticket = get_object_or_404(
         ParkingTicket,
@@ -418,9 +335,9 @@ def receipt(
     )
 
     payment = (
-        Payment.objects.filter(
-            ticket=ticket
-        ).first()
+        Payment.objects
+        .filter(ticket=ticket)
+        .first()
     )
 
     context = {
@@ -432,4 +349,43 @@ def receipt(
         request,
         "payments/receipt.html",
         context
+    )
+
+
+@login_required
+@role_required(
+    "ADMIN",
+    "OPERATOR"
+)
+def available_slots_api(
+    request
+):
+    """
+    Return compatible free slots.
+    """
+
+    vehicle_type = request.GET.get(
+        "vehicle_type",
+        ""
+    )
+
+    slots = (
+        SlotService.get_compatible_free_slots(
+            vehicle_type
+        )
+    )
+
+    data = []
+
+    for slot in slots:
+
+        data.append({
+            "id": slot.id,
+            "slot_number": slot.slot_number,
+            "slot_type": slot.slot_type,
+        })
+
+    return JsonResponse(
+        data,
+        safe=False
     )

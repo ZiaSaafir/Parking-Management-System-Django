@@ -1,16 +1,27 @@
 from django import forms
 
-from .models import VehicleType
+from .models import ParkingSlot
 
 
-class VehicleEntryForm(forms.Form):
+class ParkingSlotForm(forms.ModelForm):
 
-    vehicle_number = forms.CharField(
-        max_length=20,
-        label="Vehicle Number"
-    )
+    class Meta:
+        model = ParkingSlot
 
-    vehicle_type = forms.ModelChoiceField(
-        queryset=VehicleType.objects.all(),
-        label="Vehicle Type"
-    )
+        fields = [
+            "slot_number",
+            "slot_type",
+            "status"
+        ]
+
+        widgets = {
+            "slot_number": forms.TextInput(
+                attrs={
+                    "placeholder": "Example: A-01"
+                }
+            ),
+
+            "slot_type": forms.Select(),
+
+            "status": forms.Select(),
+        }

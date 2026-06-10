@@ -1,18 +1,29 @@
-<nav class="navbar">
+<header class="top-navbar">
 
     <div>
-
-        <h3>
+        <h1 class="page-title">
             Smart Parking Management System
-        </h3>
+        </h1>
+
+        <p class="page-subtitle">
+            Professional parking operations dashboard
+        </p>
+    </div>
+
+    <div class="user-box">
+
+        {% if user.is_authenticated %}
+
+            <span class="user-name">
+                {{ user.username }}
+            </span>
+
+            <span class="user-role">
+                {{ user.userprofile.role }}
+            </span>
+
+        {% endif %}
 
     </div>
 
-    <div>
-
-        Welcome,
-        {{ request.user.username }}
-
-    </div>
-
-</nav>
+</header>

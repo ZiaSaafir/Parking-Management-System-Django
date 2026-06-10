@@ -1,0 +1,39 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}
+Delete Slot
+{% endblock %}
+
+{% block content %}
+
+<div class="form-card">
+
+    <h2>Delete Parking Slot</h2>
+
+    <p>
+        Are you sure you want to delete slot
+        <strong>{{ slot.slot_number }}</strong>?
+    </p>
+
+    <br>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <button class="btn" type="submit">
+            Yes, Delete
+        </button>
+
+        <a
+            class="btn"
+            href="{% url 'parking_slot_list' %}"
+        >
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

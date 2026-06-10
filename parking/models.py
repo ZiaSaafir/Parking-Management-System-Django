@@ -1,9 +1,18 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class VehicleType(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    fixed_rate = models.DecimalField(max_digits=8, decimal_places=2)
+
+    name = models.CharField(
+        max_length=50,
+        unique=True
+    )
+
+    fixed_rate = models.DecimalField(
+        max_digits=8,
+        decimal_places=2
+    )
 
     def __str__(self):
         return self.name
@@ -13,7 +22,8 @@ class Vehicle(models.Model):
 
     vehicle_number = models.CharField(
         max_length=20,
-        unique=True
+        unique=True,
+        db_index=True
     )
 
     vehicle_type = models.ForeignKey(
@@ -31,7 +41,7 @@ class Vehicle(models.Model):
         blank=True
     )
 
-    visit_count = models.IntegerField(
+    total_visits = models.PositiveIntegerField(
         default=0
     )
 
@@ -45,36 +55,57 @@ class Vehicle(models.Model):
     )
 
     def __str__(self):
-
         return self.vehicle_number
 
 class ParkingSlot(models.Model):
 
     SLOT_STATUS = [
-        ('FREE', 'Free'),
-        ('OCCUPIED', 'Occupied'),
-        ('MAINTENANCE', 'Maintenance'),
+        ("FREE", "Free"),
+        ("OCCUPIED", "Occupied"),
+        ("MAINTENANCE", "Maintenance"),
     ]
 
-    slot_number = models.CharField(max_length=20, unique=True,db_index=True)
+    SLOT_TYPES = [
+        ("ANY", "Any Vehicle"),
+        ("CAR", "Car"),
+        ("BIKE", "Bike"),
+        ("RICKSHAW", "Rickshaw"),
+        ("BUS", "Bus"),
+    ]
+
+    slot_number = models.CharField(
+        max_length=20,
+        unique=True,
+        db_index=True
+    )
+
+    slot_type = models.CharField(
+        max_length=20,
+        choices=SLOT_TYPES,
+        default="ANY",
+        db_index=True
+    )
 
     status = models.CharField(
         max_length=20,
         choices=SLOT_STATUS,
-        default='FREE'
+        default="FREE",
+        db_index=True
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return self.slot_number
-    
+
 
 class ParkingTicket(models.Model):
 
     TICKET_STATUS = [
-        ('ACTIVE', 'Active'),
-        ('COMPLETED', 'Completed'),
+        ("ACTIVE", "Active"),
+        ("COMPLETED", "Completed"),
     ]
 
     vehicle = models.ForeignKey(
@@ -87,7 +118,9 @@ class ParkingTicket(models.Model):
         on_delete=models.CASCADE
     )
 
-    entry_time = models.DateTimeField(auto_now_add=True)
+    entry_time = models.DateTimeField(
+        auto_now_add=True
+    )
 
     exit_time = models.DateTimeField(
         null=True,
@@ -104,17 +137,22 @@ class ParkingTicket(models.Model):
     status = models.CharField(
         max_length=20,
         choices=TICKET_STATUS,
-        default='ACTIVE'
+        default="ACTIVE",
+        db_index=True
     )
+
+    class Meta:
+        ordering = ["-entry_time"]
 
     def __str__(self):
         return f"Ticket #{self.id}"
-    
+
+
 class Payment(models.Model):
 
     PAYMENT_METHODS = [
-        ('CASH', 'Cash'),
-        ('CARD', 'Card'),
+        ("CASH", "Cash"),
+        ("CARD", "Card"),
     ]
 
     ticket = models.OneToOneField(
@@ -132,7 +170,32 @@ class Payment(models.Model):
         choices=PAYMENT_METHODS
     )
 
-    payment_time = models.DateTimeField(auto_now_add=True)
+    payment_time = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return f"Payment #{self.id}"
+
+
+class UserProfile(models.Model):
+
+    ROLE_CHOICES = [
+        ("ADMIN", "Admin"),
+        ("MANAGER", "Manager"),
+        ("OPERATOR", "Operator"),
+    ]
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="OPERATOR"
+    )
+
+    def __str__(self):
+        return self.user.username

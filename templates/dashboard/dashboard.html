@@ -6,40 +6,171 @@ Dashboard
 
 {% block content %}
 
-<h1>Parking Dashboard</h1>
+<div class="page-header">
+    <div>
+        <h2>Operations Dashboard</h2>
+        <p>Live overview of parking capacity, tickets, and revenue.</p>
+    </div>
+
+    <div class="header-actions">
+        <a class="btn" href="{% url 'vehicle_entry' %}">
+            New Vehicle Entry
+        </a>
+    </div>
+</div>
 
 <div class="dashboard-grid">
 
-    <div class="card">
-        <h3>Total Slots</h3>
+    <div class="stat-card stat-primary">
+        <span>Total Slots</span>
         <h2>{{ total_slots }}</h2>
+        <p>Complete parking capacity</p>
     </div>
 
-    <div class="card">
-        <h3>Free Slots</h3>
+    <div class="stat-card stat-success">
+        <span>Free Slots</span>
         <h2>{{ free_slots }}</h2>
+        <p>Available for new vehicles</p>
     </div>
 
-    <div class="card">
-        <h3>Occupied Slots</h3>
+    <div class="stat-card stat-warning">
+        <span>Occupied Slots</span>
         <h2>{{ occupied_slots }}</h2>
+        <p>Currently in use</p>
     </div>
 
-    <div class="card">
-        <h3>Active Tickets</h3>
+    <div class="stat-card stat-info">
+        <span>Active Tickets</span>
         <h2>{{ active_tickets }}</h2>
+        <p>Vehicles inside parking</p>
     </div>
 
-    <div class="card">
-        <h3>Completed Tickets</h3>
+    <div class="stat-card stat-dark">
+        <span>Completed Tickets</span>
         <h2>{{ completed_tickets }}</h2>
+        <p>Finished parking sessions</p>
     </div>
 
-    <div class="card">
-        <h3>Total Revenue</h3>
+    <div class="stat-card stat-money">
+        <span>Total Revenue</span>
         <h2>Rs. {{ total_revenue }}</h2>
+        <p>Total collected payments</p>
     </div>
 
 </div>
+
+<br>
+
+<div class="dashboard-two-column">
+
+    <div class="chart-card">
+        <div class="section-title">
+            <h3>Parking Slot Usage</h3>
+            <p>Free vs occupied capacity</p>
+        </div>
+
+        <canvas id="slotChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <div class="section-title">
+            <h3>Ticket Status</h3>
+            <p>Active and completed tickets</p>
+        </div>
+
+        <canvas id="ticketChart"></canvas>
+    </div>
+
+</div>
+
+<br>
+
+<div class="quick-actions">
+
+    <a href="{% url 'vehicle_entry' %}" class="quick-card">
+        <h3>Vehicle Entry</h3>
+        <p>Register new vehicle and generate ticket.</p>
+    </a>
+
+    <a href="{% url 'vehicle_exit' %}" class="quick-card">
+        <h3>Vehicle Exit</h3>
+        <p>Process checkout, payment, and receipt.</p>
+    </a>
+
+    <a href="{% url 'active_vehicles' %}" class="quick-card">
+        <h3>Active Vehicles</h3>
+        <p>View currently parked vehicles.</p>
+    </a>
+
+    <a href="{% url 'daily_report' %}" class="quick-card">
+        <h3>Reports</h3>
+        <p>Generate daily, monthly, and custom reports.</p>
+    </a>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const freeSlots = Number("{{ free_slots }}");
+    const occupiedSlots = Number("{{ occupied_slots }}");
+    const activeTickets = Number("{{ active_tickets }}");
+    const completedTickets = Number("{{ completed_tickets }}");
+
+    new Chart(
+        document.getElementById("slotChart"),
+        {
+            type: "doughnut",
+            data: {
+                labels: ["Free Slots", "Occupied Slots"],
+                datasets: [{
+                    data: [freeSlots, occupiedSlots],
+                    backgroundColor: ["#16a34a", "#f59e0b"],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        }
+    );
+
+    new Chart(
+        document.getElementById("ticketChart"),
+        {
+            type: "bar",
+            data: {
+                labels: ["Active", "Completed"],
+                datasets: [{
+                    label: "Tickets",
+                    data: [activeTickets, completedTickets],
+                    backgroundColor: ["#2563eb", "#0f172a"],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        }
+    );
+</script>
 
 {% endblock %}
