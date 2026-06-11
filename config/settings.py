@@ -1,6 +1,8 @@
+import os
 from pathlib import Path
 
-from decouple import config, Csv
+import dj_database_url
+from decouple import Csv, config
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,11 +18,21 @@ DEBUG = config(
     cast=bool
 )
 
+
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="127.0.0.1,localhost",
     cast=Csv()
 )
+
+RENDER_EXTERNAL_HOSTNAME = os.environ.get(
+    "RENDER_EXTERNAL_HOSTNAME"
+)
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(
+        RENDER_EXTERNAL_HOSTNAME
+    )
 
 
 INSTALLED_APPS = [
@@ -36,11 +48,7 @@ INSTALLED_APPS = [
     "payments",
     "reports",
 ]
-STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -81,9 +89,18 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
+        "NAME": config(
+            "DB_NAME",
+            default="parking_db"
+        ),
+        "USER": config(
+            "DB_USER",
+            default="root"
+        ),
+        "PASSWORD": config(
+            "DB_PASSWORD",
+            default=""
+        ),
         "HOST": config(
             "DB_HOST",
             default="localhost"
@@ -94,6 +111,19 @@ DATABASES = {
         ),
     }
 }
+
+
+DATABASE_URL = config(
+    "DATABASE_URL",
+    default=""
+)
+
+if DATABASE_URL:
+    DATABASES["default"] = dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=600,
+        conn_health_checks=True
+    )
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -130,6 +160,16 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+
 MEDIA_URL = "media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
@@ -145,16 +185,35 @@ LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "login"
 
 
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+X_FRAME_OPTIONS = "DENY"
+
+
 if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = "DENY"
+
+    SECURE_SSL_REDIRECT = config(
+        "SECURE_SSL_REDIRECT",
+        default=True,
+        cast=bool
+    )
 
     SECURE_HSTS_SECONDS = config(
         "SECURE_HSTS_SECONDS",
         default=0,
         cast=int
+    )
+
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
+        "SECURE_HSTS_INCLUDE_SUBDOMAINS",
+        default=False,
+        cast=bool
+    )
+
+    SECURE_HSTS_PRELOAD = config(
+        "SECURE_HSTS_PRELOAD",
+        default=False,
+        cast=bool
     )
